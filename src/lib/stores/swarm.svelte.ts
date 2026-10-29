@@ -1,0 +1,19 @@
+
+import { invoke } from '@tauri-apps/api/core';
+export let agents = $state<any[]>([{id:'agent-1', role:'coordinator', x:100, y:100, status:'idle'}]);
+export let peers = $state<Record<string,string>>({});
+export let meshStatus = $state('offline');
+export let nodeId = $state('');
+export let transcript = $state('');
+export let modelProgress = $state<any>(null);
+export let hashLog = $state<string[]>([]);
+export async function initMesh(){
+  nodeId = Math.random().toString(36).slice(2,10);
+  try{ await invoke('mesh_listen', {port:5556, nodeId}); meshStatus='listening on 5556'; }catch(e){ meshStatus=String(e); }
+  peers = await invoke('mesh_peers');
+}
+export async function addAgent(){ agents.push({id:`agent-${agents.length+1}`, role:'worker', x:100+agents.length*40, y:100+agents.length*40, status:'idle'}); }
+export async function broadcastTask(task:string){
+  const h = await invoke<string>('mesh_broadcast', {payload: task});
+  hashLog.unshift(`${new Date().toLocaleTimeString()} broadcast ${h.slice(0,12)} ${task.slice(0,30)}`);
+}

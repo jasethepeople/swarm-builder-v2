@@ -1,0 +1,1 @@
+import { invoke } from '@tauri-apps/api/core'; export const hash = (input:string)=>invoke('blake3_hash',{input});
